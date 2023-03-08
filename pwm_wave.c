@@ -13,20 +13,18 @@ typedef struct _pwm_state_t {
 static osMailQDef(pwm_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_pwm_cfg_id;
 
-static void pwm_on(void const *arg);
-static void pwm_off(void const *arg);
-static void pwm_delay(void const *arg);
+static osMutexDef(pwm_state_m);
+osMutexId M_pwm_state;
 
-static osTimerDef(pwm_on_timer, pwm_on);
-static osTimerDef(pwm_off_timer, pwm_off);
-static osTimerDef(pwm_delay_timer, pwm_delay);
-static osTimerId TMR_pwm_on_timer;
-static osTimerId TMR_pwm_off_timer;
-static osTimerId TMR_pwm_delay_timer;
+static void pwm_run(void const *arg);
+
+static osTimerDef(pwm_run_timer, pwm_run);
+static osTimerId TMR_pwm_run_timer;
 
 void pwm_wave_init(void)
 {
 	Q_pwm_cfg_id = osMailCreate(osMailQ(pwm_cfg_q), NULL);
+	M_pwm_state = osMutexCreate(osMutex(pwm_state_m));
 }
 
 static inline void apply_dc(pwm_state_t *state)
@@ -44,18 +42,16 @@ void pwm_wave_thread(void const *arg)
 	};
 	apply_dc(&state);
 
-	TMR_pwm_on_timer = osTimerCreate(osTimer(pwm_on_timer), osTimerPeriodic, &state);
-	TMR_pwm_off_timer = osTimerCreate(osTimer(pwm_off_timer), osTimerPeriodic, &state);
-	TMR_pwm_delay_timer = osTimerCreate(osTimer(pwm_delay_timer), osTimerOnce, &state);
+	TMR_pwm_run_timer = osTimerCreate(osTimer(pwm_run_timer), osTimerPeriodic, &state);
 
-	osTimerStart(TMR_pwm_on_timer, state.periodMs);
-	osTimerStart(TMR_pwm_delay_timer, state.onTimeMs);
+	osTimerStart(TMR_pwm_run_timer, 1);
 
 	osEvent retval;
 	while (1) {
 		retval = osMailGet(Q_pwm_cfg_id, osWaitForever);
 		waveform_cfg_t *cfg = retval.value.p;
-		
+
+		osMutexWait(M_pwm_state, osWaitForever);
 		switch (cfg->type) {
 			case PARAM_AMPLITUDE:
 			{
@@ -75,23 +71,29 @@ void pwm_wave_thread(void const *arg)
 				break;
 			}
 		}
+		osMutexRelease(M_pwm_state);
 	}
 }
 
-static void pwm_on(void const *arg)
+static void pwm_run(void const *arg)
 {
-	pwm_state_t const *state = arg;
-	GPIO_Write(GPIOA, state->amplitude);
-}
+	static uint32_t curTimeMs = 0;
 
-static void pwm_off(void const *arg)
-{
-	(void)arg;
-	GPIO_Write(GPIOA, 0x0000);
-}
+	osMutexWait(M_pwm_state, osWaitForever);
+	{
+		pwm_state_t const *state = arg;
 
-static void pwm_delay(void const *arg)
-{
-	pwm_state_t const *state = arg;
-	osTimerStart(TMR_pwm_off_timer, state->periodMs);
+		if (curTimeMs >= state->periodMs) {
+			curTimeMs = 0;
+		}
+
+		if (curTimeMs == 0) {
+			GPIO_Write(GPIOA, state->amplitude);
+		} else if (curTimeMs == state->onTimeMs) {
+			GPIO_Write(GPIOA, 0);
+		}
+	}
+	osMutexRelease(M_pwm_state);
+
+	++curTimeMs;
 }
