@@ -424,6 +424,11 @@
               <FileType>5</FileType>
               <FilePath>.\uart_handler.h</FilePath>
             </File>
+            <File>
+              <FileName>waveform_cfg.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\waveform_cfg.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

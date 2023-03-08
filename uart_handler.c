@@ -3,8 +3,8 @@
 #include "uart.h"
 #include "utils.h"
 
-osMessageQDef(uart_q, 0x10, uint8_t);
-osMessageQId Q_uart_id;
+static osMessageQDef(uart_q, 0x10, uint8_t);
+static osMessageQId Q_uart_id;
 
 void uart_handler_init(void)
 {
@@ -20,17 +20,7 @@ void uart_handler_init(void)
 	Q_uart_id = osMessageCreate(osMessageQ(uart_q), NULL);
 }
 
-/*-----------------------------------------------------------------------------
-	USART1 IRQ Handler
-		The hardware automatically clears the interrupt flag, once the ISR is entered
- *---------------------------------------------------------------------------*/
-void USART1_IRQHandler(void)
-{
-	uint8_t intKey = (int8_t)(USART1->DR & 0x1FF);
-	osMessagePut(Q_uart_id, intKey, 0);
-}
-
-void uart_thread(void const *arg)
+void uart_handler_thread(void const *arg)
 {
 	osEvent result;
 	uint8_t input;
@@ -41,4 +31,14 @@ void uart_thread(void const *arg)
 
 		SendChar(input);
 	}
+}
+
+/*-----------------------------------------------------------------------------
+	USART1 IRQ Handler
+		The hardware automatically clears the interrupt flag, once the ISR is entered
+ *---------------------------------------------------------------------------*/
+void USART1_IRQHandler(void)
+{
+	uint8_t intKey = (int8_t)(USART1->DR & 0x1FF);
+	osMessagePut(Q_uart_id, intKey, 0);
 }
