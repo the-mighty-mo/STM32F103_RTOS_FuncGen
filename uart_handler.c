@@ -2,9 +2,12 @@
 #include "cmsis_os.h"
 #include "uart.h"
 #include "utils.h"
+#include <string.h>
 
 static osMessageQDef(uart_q, 0x10, uint8_t);
 static osMessageQId Q_uart_id;
+
+static void SendText(char const *text);
 
 void uart_handler_init(void)
 {
@@ -25,11 +28,42 @@ void uart_handler_thread(void const *arg)
 	osEvent result;
 	uint8_t input;
 
+	#define LINE_CAP 16
+	char line[LINE_CAP] = {0};
+	size_t line_len = 0;
+
 	while (1) {
 		result = osMessageGet(Q_uart_id, osWaitForever);
 		input = result.value.v;
 
-		SendChar(input);
+		if (input == '\b') {
+			/* if we have characters in the line, remove the last char */
+			if (line_len > 0) {
+				line[--line_len] = '\0';
+				SendText("\b \b");
+			}
+		} else if (input == '\r') {
+			/* UART sends CR, we want to send LF */
+			SendChar('\n');
+
+			/* process line */
+
+			/* clear line */
+			memset(line, 0, sizeof(line));
+			line_len = 0;
+		} else if (line_len < LINE_CAP - 1) {
+			/* add input to the end of the line */
+			line[line_len++] = input;
+			SendChar(input);
+		}
+	}
+}
+
+static void SendText(char const *text)
+{
+	while (*text) {
+		SendChar(*text);
+		++text;
 	}
 }
 
