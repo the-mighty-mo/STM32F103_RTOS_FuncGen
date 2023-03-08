@@ -21,26 +21,20 @@ void pwm_wave_init(void)
 	Q_pwm_cfg_id = osMailCreate(osMailQ(pwm_cfg_q), NULL);
 }
 
+static inline void apply_dc(uint16_t dutyCycle_q0d10, uint32_t periodMs, uint32_t *onTimeMs, uint32_t *offTimeMs)
+{
+	*onTimeMs = ((uint64_t)periodMs * dutyCycle_q0d10) >> 10;
+	*offTimeMs = periodMs - *onTimeMs;
+}
+
 void pwm_wave_thread(void const *arg)
 {
-	uint32_t amplitude;
+	uint32_t amplitude = SCALE_AMPLITUDE(100);
+	uint32_t periodMs = 100;
+	uint16_t dutyCycle_q0d10 = SCALE_DUTYCYCLE(50);
 	uint32_t onTimeMs;
 	uint32_t offTimeMs;
-	uint32_t periodMs = 100;
-
-	{
-		uint16_t mV = 75;
-		uint8_t dutyCycle = 75;
-
-		if (mV > GPIO_MAX_V) mV = GPIO_MAX_V;
-		if (dutyCycle > 100) dutyCycle = 100;
-
-		uint16_t dutyCycle_q0d10 = SCALE_DUTYCYCLE(dutyCycle);
-
-		amplitude = SCALE_AMPLITUDE(mV);
-		onTimeMs = ((uint64_t)periodMs * dutyCycle_q0d10) >> 10;
-		offTimeMs = periodMs - onTimeMs;
-	}
+	apply_dc(dutyCycle_q0d10, periodMs, &onTimeMs, &offTimeMs);
 
 	TMR_pwm_on_timer = osTimerCreate(osTimer(pwm_on_timer), osTimerPeriodic, (void *)amplitude);
 	TMR_pwm_off_timer = osTimerCreate(osTimer(pwm_off_timer), osTimerPeriodic, NULL);
@@ -48,6 +42,32 @@ void pwm_wave_thread(void const *arg)
 
 	osTimerStart(TMR_pwm_on_timer, periodMs);
 	osTimerStart(TMR_pwm_delay_timer, onTimeMs);
+
+	osEvent retval;
+	while (1) {
+		retval = osMailGet(Q_pwm_cfg_id, osWaitForever);
+		waveform_cfg_t *cfg = retval.value.p;
+		
+		switch (cfg->type) {
+			case PARAM_AMPLITUDE:
+			{
+				amplitude = SCALE_AMPLITUDE(cfg->value);
+				break;
+			}
+			case PARAM_PERIOD_MS:
+			{
+				periodMs = cfg->value;
+				apply_dc(dutyCycle_q0d10, periodMs, &onTimeMs, &offTimeMs);
+				break;
+			}
+			case PARAM_DUTYCYCLE:
+			{
+				dutyCycle_q0d10 = SCALE_DUTYCYCLE(cfg->value);
+				apply_dc(dutyCycle_q0d10, periodMs, &onTimeMs, &offTimeMs);
+				break;
+			}
+		}
+	}
 }
 
 static void pwm_on(void const *arg)
