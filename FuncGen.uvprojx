@@ -399,6 +399,31 @@
               <FileType>5</FileType>
               <FilePath>.\uart.h</FilePath>
             </File>
+            <File>
+              <FileName>pwm_wave.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\pwm_wave.c</FilePath>
+            </File>
+            <File>
+              <FileName>pwm_wave.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\pwm_wave.h</FilePath>
+            </File>
+            <File>
+              <FileName>utils.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\utils.h</FilePath>
+            </File>
+            <File>
+              <FileName>uart_handler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\uart_handler.c</FilePath>
+            </File>
+            <File>
+              <FileName>uart_handler.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\uart_handler.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
