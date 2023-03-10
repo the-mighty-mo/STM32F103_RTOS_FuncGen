@@ -7,7 +7,6 @@ typedef struct _pwm_state_t {
 	uint32_t periodMs;
 	uint16_t dutyCycle_q0d10;
 	uint32_t onTimeMs;
-	uint32_t offTimeMs;
 } pwm_state_t;
 
 static osMailQDef(pwm_cfg_q, 0x8, waveform_cfg_t);
@@ -30,7 +29,6 @@ void pwm_wave_init(void)
 static inline void apply_dc(pwm_state_t *state)
 {
 	state->onTimeMs = ((uint64_t)state->periodMs * state->dutyCycle_q0d10) >> 10;
-	state->offTimeMs = state->periodMs - state->onTimeMs;
 }
 
 void pwm_wave_thread(void const *arg)
