@@ -68,6 +68,8 @@ void pwm_wave_thread(void const *arg)
 				apply_dc(&state);
 				break;
 			}
+			default:
+				break;
 		}
 		osMutexRelease(M_pwm_state);
 	}
