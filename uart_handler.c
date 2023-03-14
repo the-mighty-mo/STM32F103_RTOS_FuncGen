@@ -1,5 +1,4 @@
-#include "STM32F10x.h"
-#include "cmsis_os.h"
+#include "global.h"
 #include "uart.h"
 #include "utils.h"
 #include <string.h>

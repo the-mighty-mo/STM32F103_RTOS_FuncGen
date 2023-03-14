@@ -1,4 +1,4 @@
-#include "STM32F10x.h"
+#include "global.h"
 #include "pwm_wave.h"
 #include "utils.h"
 
@@ -86,9 +86,9 @@ static void pwm_run(void const *arg)
 		}
 
 		if (curTimeMs == 0) {
-			GPIO_Write(GPIOA, state->amplitude);
+			GPIO_Write(WAVEFORM_PORT, state->amplitude);
 		} else if (curTimeMs == state->onTimeMs) {
-			GPIO_Write(GPIOA, 0);
+			GPIO_Write(WAVEFORM_PORT, 0);
 		}
 	}
 	osMutexRelease(M_pwm_state);

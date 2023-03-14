@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cmsis_os.h"
+#include "global.h"
 #include "waveform_cfg.h"
 
 void pwm_wave_init(void);

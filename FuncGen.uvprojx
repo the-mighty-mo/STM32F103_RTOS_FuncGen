@@ -429,6 +429,21 @@
               <FileType>5</FileType>
               <FilePath>.\waveform_cfg.h</FilePath>
             </File>
+            <File>
+              <FileName>triangle_wave.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\triangle_wave.c</FilePath>
+            </File>
+            <File>
+              <FileName>triangle_wave.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\triangle_wave.h</FilePath>
+            </File>
+            <File>
+              <FileName>global.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\global.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
