@@ -1,4 +1,4 @@
-#include <stm32F10x.h>
+#include <stm32f10x.h>
 
 /*----------------------------------------------------------------------------
   Initialize UART pins, Baudrate

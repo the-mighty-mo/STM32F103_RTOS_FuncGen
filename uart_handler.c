@@ -18,6 +18,9 @@ static uint8_t ReadChar(void);
 static size_t ReadLine(char *line, size_t line_cap);
 static void SendText(char const *text);
 
+static int32_t parse_u16_saturate(char *str);
+static int32_t u16_to_str(uint16_t value, char *str, size_t cap);
+
 /// Program state
 
 typedef enum _program_state_t {
@@ -59,6 +62,25 @@ void uart_handler_init(void)
 static program_state_t process_config_pwm(param_t *param)
 {
 	SendText("Waveform: PWM\n");
+
+	char line[8] = {0};
+	u16_to_str(100, line, sizeof(line));
+	SendText("Amplitude: ");
+	SendText(line);
+	SendText("%\n");
+
+	u16_to_str(100, line, sizeof(line));
+	SendText("Period: ");
+	SendText(line);
+	SendText(" ms\n");
+
+	u16_to_str(50, line, sizeof(line));
+	SendText("Duty Cycle: ");
+	SendText(line);
+	SendText("%\n");
+
+	SendChar('\n');
+
 	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
@@ -104,6 +126,20 @@ static program_state_t process_config_pwm(param_t *param)
 static program_state_t process_config_saw(param_t *param)
 {
 	SendText("Waveform: Sawtooth\n");
+
+	char line[8] = {0};
+	u16_to_str(100, line, sizeof(line));
+	SendText("Amplitude: ");
+	SendText(line);
+	SendText("%\n");
+
+	u16_to_str(100, line, sizeof(line));
+	SendText("Period: ");
+	SendText(line);
+	SendText(" ms\n");
+
+	SendChar('\n');
+
 	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
@@ -145,6 +181,20 @@ static program_state_t process_config_saw(param_t *param)
 static program_state_t process_config_sin(param_t *param)
 {
 	SendText("Waveform: Sine\n");
+
+	char line[8] = {0};
+	u16_to_str(100, line, sizeof(line));
+	SendText("Amplitude: ");
+	SendText(line);
+	SendText("%\n");
+
+	u16_to_str(100, line, sizeof(line));
+	SendText("Period: ");
+	SendText(line);
+	SendText(" ms\n");
+
+	SendChar('\n');
+
 	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
@@ -186,6 +236,20 @@ static program_state_t process_config_sin(param_t *param)
 static program_state_t process_config_tri(param_t *param)
 {
 	SendText("Waveform: Triangle\n");
+
+	char line[8] = {0};
+	u16_to_str(100, line, sizeof(line));
+	SendText("Amplitude: ");
+	SendText(line);
+	SendText("%\n");
+
+	u16_to_str(100, line, sizeof(line));
+	SendText("Period: ");
+	SendText(line);
+	SendText(" ms\n");
+
+	SendChar('\n');
+
 	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
@@ -222,23 +286,6 @@ static program_state_t process_config_tri(param_t *param)
 	}
 	
 	return CONFIG_PARAM;
-}
-
-int32_t parse_u16_saturate(char *str)
-{
-	int32_t retval = 0;
-	for (; *str; ++str) {
-		if (*str < '0' || *str > '9') {
-			/* invalid input */
-			return -1;
-		}
-		retval *= 10;
-		retval += *str - '0';
-		if (retval > 0xFFFF) {
-			return 0xFFFF;
-		}
-	}
-	return retval;
 }
 
 void uart_handler_thread(void const *arg)
@@ -341,7 +388,7 @@ void uart_handler_thread(void const *arg)
 					}
 					case PERIOD:
 					{
-						SendText("Period [0-60000ms]: ");
+						SendText("Period [0-60000 ms]: ");
 						line_len = ReadLine(line, LINE_CAP);
 
 						int32_t const value = parse_u16_saturate(line);
@@ -468,6 +515,41 @@ static void SendText(char const *text)
 		SendChar(*text);
 		++text;
 	}
+}
+
+static int32_t parse_u16_saturate(char *str)
+{
+	int32_t retval = 0;
+	for (; *str; ++str) {
+		if (*str < '0' || *str > '9') {
+			/* invalid input */
+			return -1;
+		}
+		retval *= 10;
+		retval += *str - '0';
+		if (retval > 0xFFFF) {
+			return 0xFFFF;
+		}
+	}
+	return retval;
+}
+
+static int32_t u16_to_str(uint16_t value, char *str, size_t cap)
+{
+	int32_t str_len = 0;
+
+	uint16_t value_tmp = value;
+	while (value_tmp) {
+		value_tmp /= 10;
+		++str_len;
+	}
+
+	for (int i = str_len - 1; i >= 0; --i) {
+		str[i] = (value % 10) + '0';
+		value /= 10;
+	}
+	str[str_len] = '\0';
+	return str_len;
 }
 
 /*-----------------------------------------------------------------------------

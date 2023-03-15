@@ -1,6 +1,6 @@
 #pragma once
 
-#include "STM32F10x.h"
+#include "stm32f10x.h"
 #include "cmsis_os.h"
 #include <stdint.h>
 
