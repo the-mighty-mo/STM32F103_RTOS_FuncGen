@@ -4,11 +4,11 @@
 
 typedef struct _triangle_state_t {
 	// configuration values
-	uint32_t amplitude;
-	uint32_t periodMs;
+	uint16_t amplitude;
+	uint16_t periodMs;
 
 	// calculated values
-	uint32_t halfPeriodMs;
+	uint16_t halfPeriodMs;
 } triangle_state_t;
 
 static osMailQDef(triangle_cfg_q, 0x8, waveform_cfg_t);
@@ -72,7 +72,7 @@ void triangle_wave_thread(void const *arg)
 
 static void triangle_run(void const *arg)
 {
-	static uint32_t curTimeMs = 0;
+	static uint16_t curTimeMs = 0;
 
 	osMutexWait(M_triangle_state, osWaitForever);
 	{
@@ -83,9 +83,9 @@ static void triangle_run(void const *arg)
 		}
 
 		if (curTimeMs <= state->halfPeriodMs) {
-			GPIO_Write(WAVEFORM_PORT, (uint64_t)state->amplitude * curTimeMs / state->halfPeriodMs);
+			GPIO_Write(WAVEFORM_PORT, (uint32_t)state->amplitude * curTimeMs / state->halfPeriodMs);
 		} else {
-			GPIO_Write(WAVEFORM_PORT, (uint64_t)state->amplitude * (state->periodMs - curTimeMs) / state->halfPeriodMs);
+			GPIO_Write(WAVEFORM_PORT, (uint32_t)state->amplitude * (state->periodMs - curTimeMs) / state->halfPeriodMs);
 		}
 	}
 	osMutexRelease(M_triangle_state);

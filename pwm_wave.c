@@ -4,12 +4,12 @@
 
 typedef struct _pwm_state_t {
 	// configuration values
-	uint32_t amplitude;
-	uint32_t periodMs;
+	uint16_t amplitude;
+	uint16_t periodMs;
 	uint16_t dutyCycle_q0d10;
 
 	// calculated values
-	uint32_t onTimeMs;
+	uint16_t onTimeMs;
 } pwm_state_t;
 
 static osMailQDef(pwm_cfg_q, 0x8, waveform_cfg_t);
@@ -31,7 +31,7 @@ void pwm_wave_init(void)
 
 static inline void apply_dc(pwm_state_t *state)
 {
-	state->onTimeMs = ((uint64_t)state->periodMs * state->dutyCycle_q0d10) >> 10;
+	state->onTimeMs = ((uint32_t)state->periodMs * state->dutyCycle_q0d10) >> 10;
 }
 
 void pwm_wave_thread(void const *arg)
@@ -80,7 +80,7 @@ void pwm_wave_thread(void const *arg)
 
 static void pwm_run(void const *arg)
 {
-	static uint32_t curTimeMs = 0;
+	static uint16_t curTimeMs = 0;
 
 	osMutexWait(M_pwm_state, osWaitForever);
 	{
