@@ -107,7 +107,7 @@ static program_state_t process_config_pwm(param_t *param)
 		case '\e':
 		{
 			*param = NO_PARAM;
-			waveform_cfg_t cfg = {
+			waveform_cfg_t const cfg = {
 				.type = PARAM_ENABLE,
 				.value = 0,
 			};
@@ -162,7 +162,7 @@ static program_state_t process_config_saw(param_t *param)
 		case '\e':
 		{
 			*param = NO_PARAM;
-			waveform_cfg_t cfg = {
+			waveform_cfg_t const cfg = {
 				.type = PARAM_ENABLE,
 				.value = 0,
 			};
@@ -217,7 +217,7 @@ static program_state_t process_config_sin(param_t *param)
 		case '\e':
 		{
 			*param = NO_PARAM;
-			waveform_cfg_t cfg = {
+			waveform_cfg_t const cfg = {
 				.type = PARAM_ENABLE,
 				.value = 0,
 			};
@@ -272,7 +272,7 @@ static program_state_t process_config_tri(param_t *param)
 		case '\e':
 		{
 			*param = NO_PARAM;
-			waveform_cfg_t cfg = {
+			waveform_cfg_t const cfg = {
 				.type = PARAM_ENABLE,
 				.value = 0,
 			};
@@ -563,6 +563,6 @@ static int32_t u16_to_str(uint16_t value, char *str, size_t cap)
  *---------------------------------------------------------------------------*/
 void USART1_IRQHandler(void)
 {
-	uint8_t intKey = (int8_t)(USART1->DR & 0x1FF);
+	uint8_t const intKey = (int8_t)(USART1->DR & 0x1FF);
 	osMessagePut(Q_uart_id, intKey, 0);
 }
