@@ -183,12 +183,18 @@ static program_state_t process_config_sin(param_t *param)
 	SendText("Waveform: Sine\n");
 
 	char line[8] = {0};
-	u16_to_str(100, line, sizeof(line));
+	waveform_cfg_t cfg;
+
+	cfg.type = PARAM_AMPLITUDE;
+	sine_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Amplitude: ");
 	SendText(line);
 	SendText("%\n");
 
-	u16_to_str(100, line, sizeof(line));
+	cfg.type = PARAM_PERIOD_MS;
+	sine_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Period: ");
 	SendText(line);
 	SendText(" ms\n");

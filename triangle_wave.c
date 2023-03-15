@@ -68,8 +68,10 @@ void triangle_wave_thread(void const *arg)
 				case PARAM_ENABLE:
 				{
 					if (cfg->value) {
+						/* toggle enable if value is non-zero */
 						bRunning = !bRunning;
 					} else {
+						/* otherwise disable output */
 						bRunning = 0;
 					}
 

@@ -3,8 +3,9 @@
 #include <stdint.h>
 
 typedef enum _waveform_cfg_param_t {
-	PARAM_PERIOD_MS,
+	PARAM_RECV,
 	PARAM_AMPLITUDE,
+	PARAM_PERIOD_MS,
 	PARAM_DUTYCYCLE,
 	PARAM_ENABLE,
 } waveform_cfg_param_t;
