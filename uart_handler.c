@@ -83,8 +83,15 @@ static program_state_t process_config_pwm(param_t *param)
 			*param = ENABLE_OUT;
 			break;
 		case '\e':
+		{
 			*param = NO_PARAM;
+			waveform_cfg_t cfg = {
+				.type = PARAM_ENABLE,
+				.value = 0,
+			};
+			pwm_wave_send_cfg(cfg);
 			return SELECT_WAVE;
+		}
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -117,8 +124,15 @@ static program_state_t process_config_saw(param_t *param)
 			*param = ENABLE_OUT;
 			break;
 		case '\e':
+		{
 			*param = NO_PARAM;
+			waveform_cfg_t cfg = {
+				.type = PARAM_ENABLE,
+				.value = 0,
+			};
+			sawtooth_wave_send_cfg(cfg);
 			return SELECT_WAVE;
+		}
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -151,8 +165,15 @@ static program_state_t process_config_sin(param_t *param)
 			*param = ENABLE_OUT;
 			break;
 		case '\e':
+		{
 			*param = NO_PARAM;
+			waveform_cfg_t cfg = {
+				.type = PARAM_ENABLE,
+				.value = 0,
+			};
+			sine_wave_send_cfg(cfg);
 			return SELECT_WAVE;
+		}
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -185,8 +206,15 @@ static program_state_t process_config_tri(param_t *param)
 			*param = ENABLE_OUT;
 			break;
 		case '\e':
+		{
 			*param = NO_PARAM;
+			waveform_cfg_t cfg = {
+				.type = PARAM_ENABLE,
+				.value = 0,
+			};
+			triangle_wave_send_cfg(cfg);
 			return SELECT_WAVE;
+		}
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
