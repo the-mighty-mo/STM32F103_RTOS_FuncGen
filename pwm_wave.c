@@ -12,6 +12,8 @@ typedef struct _pwm_state_t {
 	uint16_t onTimeMs;
 } pwm_state_t;
 
+static uint16_t curTimeMs = 0;
+
 static osMailQDef(pwm_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_pwm_cfg_id;
 
@@ -84,6 +86,7 @@ void pwm_wave_thread(void const *arg)
 					} else {
 						osTimerStop(TMR_pwm_run_timer);
 						GPIO_Write(WAVEFORM_PORT, 0);
+						curTimeMs = 0;
 					}
 					break;
 				}
@@ -99,8 +102,6 @@ void pwm_wave_thread(void const *arg)
 
 static void pwm_run(void const *arg)
 {
-	static uint16_t curTimeMs = 0;
-
 	osMutexWait(M_pwm_state, osWaitForever);
 	{
 		pwm_state_t const *state = arg;

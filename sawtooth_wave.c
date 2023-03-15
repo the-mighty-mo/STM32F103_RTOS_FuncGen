@@ -11,6 +11,8 @@ typedef struct _sawtooth_state_t {
 	uint16_t periodMaxAmpMs;
 } sawtooth_state_t;
 
+static uint16_t curTimeMs = 0;
+
 static osMailQDef(sawtooth_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_sawtooth_cfg_id;
 
@@ -76,6 +78,7 @@ void sawtooth_wave_thread(void const *arg)
 					} else {
 						osTimerStop(TMR_sawtooth_run_timer);
 						GPIO_Write(WAVEFORM_PORT, 0);
+						curTimeMs = 0;
 					}
 					break;
 				}
@@ -91,8 +94,6 @@ void sawtooth_wave_thread(void const *arg)
 
 static void sawtooth_run(void const *arg)
 {
-	static uint16_t curTimeMs = 0;
-
 	osMutexWait(M_sawtooth_state, osWaitForever);
 	{
 		sawtooth_state_t const *state = arg;

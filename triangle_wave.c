@@ -11,6 +11,8 @@ typedef struct _triangle_state_t {
 	uint16_t halfPeriodMs;
 } triangle_state_t;
 
+static uint16_t curTimeMs = 0;
+
 static osMailQDef(triangle_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_triangle_cfg_id;
 
@@ -76,6 +78,7 @@ void triangle_wave_thread(void const *arg)
 					} else {
 						osTimerStop(TMR_triangle_run_timer);
 						GPIO_Write(WAVEFORM_PORT, 0);
+						curTimeMs = 0;
 					}
 					break;
 				}
@@ -91,8 +94,6 @@ void triangle_wave_thread(void const *arg)
 
 static void triangle_run(void const *arg)
 {
-	static uint16_t curTimeMs = 0;
-
 	osMutexWait(M_triangle_state, osWaitForever);
 	{
 		triangle_state_t const *state = arg;
