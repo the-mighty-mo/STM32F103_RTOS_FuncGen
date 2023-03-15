@@ -17,6 +17,9 @@ static uint16_t curTimeMs = 0;
 static osMailQDef(sawtooth_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_sawtooth_cfg_id;
 
+static osMessageQDef(sawtooth_cfg_recv_q, 0x8, uint32_t);
+osMessageQId Q_sawtooth_cfg_recv_id;
+
 static osMutexDef(sawtooth_state_m);
 osMutexId M_sawtooth_state;
 
@@ -28,7 +31,27 @@ static osTimerId TMR_sawtooth_run_timer;
 void sawtooth_wave_init(void)
 {
 	Q_sawtooth_cfg_id = osMailCreate(osMailQ(sawtooth_cfg_q), NULL);
+	Q_sawtooth_cfg_recv_id = osMessageCreate(osMessageQ(sawtooth_cfg_recv_q), NULL);
 	M_sawtooth_state = osMutexCreate(osMutex(sawtooth_state_m));
+}
+
+static void send_cfg_param(sawtooth_state_t *state, waveform_cfg_param_t param)
+{
+	uint32_t value = 0;
+	switch (param) {
+		case PARAM_AMPLITUDE:
+			value = AMPLITUDE_TO_USER(state->amplitude);
+			break;
+		case PARAM_PERIOD_MS:
+			value = state->periodMs;
+			break;
+		case PARAM_ENABLE:
+			value = state->bRunning;
+			break;
+		default:
+			break;
+	}
+	osMessagePut(Q_sawtooth_cfg_recv_id, value, 0);
 }
 
 static inline void apply_periodMaxAmp(sawtooth_state_t *state)
@@ -83,6 +106,11 @@ void sawtooth_wave_thread(void const *arg)
 						GPIO_Write(WAVEFORM_PORT, 0);
 						curTimeMs = 0;
 					}
+					break;
+				}
+				case PARAM_RECV:
+				{
+					send_cfg_param(&state, cfg->value);
 					break;
 				}
 				default:

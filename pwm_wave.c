@@ -18,6 +18,9 @@ static uint16_t curTimeMs = 0;
 static osMailQDef(pwm_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_pwm_cfg_id;
 
+static osMessageQDef(pwm_cfg_recv_q, 0x8, uint32_t);
+osMessageQId Q_pwm_cfg_recv_id;
+
 static osMutexDef(pwm_state_m);
 osMutexId M_pwm_state;
 
@@ -29,7 +32,30 @@ static osTimerId TMR_pwm_run_timer;
 void pwm_wave_init(void)
 {
 	Q_pwm_cfg_id = osMailCreate(osMailQ(pwm_cfg_q), NULL);
+	Q_pwm_cfg_recv_id = osMessageCreate(osMessageQ(pwm_cfg_recv_q), NULL);
 	M_pwm_state = osMutexCreate(osMutex(pwm_state_m));
+}
+
+static void send_cfg_param(pwm_state_t *state, waveform_cfg_param_t param)
+{
+	uint32_t value = 0;
+	switch (param) {
+		case PARAM_AMPLITUDE:
+			value = AMPLITUDE_TO_USER(state->amplitude);
+			break;
+		case PARAM_PERIOD_MS:
+			value = state->periodMs;
+			break;
+		case PARAM_DUTYCYCLE:
+			value = DUTYCYCLE_TO_USER(state->dutyCycle_q0d10);
+			break;
+		case PARAM_ENABLE:
+			value = state->bRunning;
+			break;
+		default:
+			break;
+	}
+	osMessagePut(Q_pwm_cfg_recv_id, value, 0);
 }
 
 static inline void apply_dc(pwm_state_t *state)
@@ -91,6 +117,11 @@ void pwm_wave_thread(void const *arg)
 						GPIO_Write(WAVEFORM_PORT, 0);
 						curTimeMs = 0;
 					}
+					break;
+				}
+				case PARAM_RECV:
+				{
+					send_cfg_param(&state, cfg->value);
 					break;
 				}
 				default:

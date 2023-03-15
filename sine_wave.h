@@ -14,7 +14,7 @@ static inline osStatus sine_wave_send_cfg(waveform_cfg_t cfg)
 	return osMailPut(Q_sine_cfg_id, alloc_cfg);
 }
 
-static inline osStatus sine_wave_recv_cfg(waveform_cfg_t *cfg)
+static osStatus sine_wave_recv_cfg(waveform_cfg_t *cfg)
 {
 	extern osMailQId Q_sine_cfg_id;
 	extern osMessageQId Q_sine_cfg_recv_id;

@@ -64,25 +64,41 @@ static program_state_t process_config_pwm(param_t *param)
 	SendText("Waveform: PWM\n");
 
 	char line[8] = {0};
-	u16_to_str(100, line, sizeof(line));
+	waveform_cfg_t cfg;
+
+	cfg.type = PARAM_AMPLITUDE;
+	pwm_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Amplitude: ");
 	SendText(line);
 	SendText("%\n");
 
-	u16_to_str(100, line, sizeof(line));
+	cfg.type = PARAM_PERIOD_MS;
+	pwm_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Period: ");
 	SendText(line);
 	SendText(" ms\n");
 
-	u16_to_str(50, line, sizeof(line));
+	cfg.type = PARAM_DUTYCYCLE;
+	pwm_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Duty Cycle: ");
 	SendText(line);
 	SendText("%\n");
 
+	cfg.type = PARAM_ENABLE;
+	pwm_wave_recv_cfg(&cfg);
+	uint8_t bEnabled = cfg.value;
+
 	SendChar('\n');
 
 	SendText("[Esc] Switch waveform\n");
-	SendText("[0] Enable Output\n");
+	if (bEnabled) {
+		SendText("[0] Disable Output\n");
+	} else {
+		SendText("[0] Enable Output\n");
+	}
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
 	SendText("[3] Change Duty Cycle\n");
@@ -128,20 +144,34 @@ static program_state_t process_config_saw(param_t *param)
 	SendText("Waveform: Sawtooth\n");
 
 	char line[8] = {0};
-	u16_to_str(100, line, sizeof(line));
+	waveform_cfg_t cfg;
+
+	cfg.type = PARAM_AMPLITUDE;
+	sawtooth_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Amplitude: ");
 	SendText(line);
 	SendText("%\n");
 
-	u16_to_str(100, line, sizeof(line));
+	cfg.type = PARAM_PERIOD_MS;
+	sawtooth_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Period: ");
 	SendText(line);
 	SendText(" ms\n");
 
+	cfg.type = PARAM_ENABLE;
+	sawtooth_wave_recv_cfg(&cfg);
+	uint8_t bEnabled = cfg.value;
+
 	SendChar('\n');
 
 	SendText("[Esc] Switch waveform\n");
-	SendText("[0] Enable Output\n");
+	if (bEnabled) {
+		SendText("[0] Disable Output\n");
+	} else {
+		SendText("[0] Enable Output\n");
+	}
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
 	SendText("Selection: ");
@@ -199,10 +229,18 @@ static program_state_t process_config_sin(param_t *param)
 	SendText(line);
 	SendText(" ms\n");
 
+	cfg.type = PARAM_ENABLE;
+	sine_wave_recv_cfg(&cfg);
+	uint8_t bEnabled = cfg.value;
+
 	SendChar('\n');
 
 	SendText("[Esc] Switch waveform\n");
-	SendText("[0] Enable Output\n");
+	if (bEnabled) {
+		SendText("[0] Disable Output\n");
+	} else {
+		SendText("[0] Enable Output\n");
+	}
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
 	SendText("Selection: ");
@@ -244,20 +282,34 @@ static program_state_t process_config_tri(param_t *param)
 	SendText("Waveform: Triangle\n");
 
 	char line[8] = {0};
-	u16_to_str(100, line, sizeof(line));
+	waveform_cfg_t cfg;
+
+	cfg.type = PARAM_AMPLITUDE;
+	triangle_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Amplitude: ");
 	SendText(line);
 	SendText("%\n");
 
-	u16_to_str(100, line, sizeof(line));
+	cfg.type = PARAM_PERIOD_MS;
+	triangle_wave_recv_cfg(&cfg);
+	u16_to_str(cfg.value, line, sizeof(line));
 	SendText("Period: ");
 	SendText(line);
 	SendText(" ms\n");
 
+	cfg.type = PARAM_ENABLE;
+	triangle_wave_recv_cfg(&cfg);
+	uint8_t bEnabled = cfg.value;
+
 	SendChar('\n');
 
 	SendText("[Esc] Switch waveform\n");
-	SendText("[0] Enable Output\n");
+	if (bEnabled) {
+		SendText("[0] Disable Output\n");
+	} else {
+		SendText("[0] Enable Output\n");
+	}
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
 	SendText("Selection: ");
