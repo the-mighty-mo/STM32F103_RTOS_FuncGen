@@ -3,9 +3,12 @@
 #include "utils.h"
 
 typedef struct _pwm_state_t {
+	// configuration values
 	uint32_t amplitude;
 	uint32_t periodMs;
 	uint16_t dutyCycle_q0d10;
+
+	// calculated values
 	uint32_t onTimeMs;
 } pwm_state_t;
 

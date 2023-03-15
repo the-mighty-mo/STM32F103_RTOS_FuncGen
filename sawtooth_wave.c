@@ -3,8 +3,12 @@
 #include "utils.h"
 
 typedef struct _sawtooth_state_t {
+	// configuration values
 	uint32_t amplitude;
 	uint32_t periodMs;
+
+	// calculated values
+	uint32_t periodMaxAmpMs;
 } sawtooth_state_t;
 
 static osMailQDef(sawtooth_cfg_q, 0x8, waveform_cfg_t);
@@ -24,12 +28,18 @@ void sawtooth_wave_init(void)
 	M_sawtooth_state = osMutexCreate(osMutex(sawtooth_state_m));
 }
 
+static inline void apply_periodMaxAmp(sawtooth_state_t *state)
+{
+	state->periodMaxAmpMs = state->periodMs - 1;
+}
+
 void sawtooth_wave_thread(void const *arg)
 {
 	sawtooth_state_t state = {
 		.amplitude = SCALE_AMPLITUDE(100),
 		.periodMs = 100,
 	};
+	apply_periodMaxAmp(&state);
 
 	TMR_sawtooth_run_timer = osTimerCreate(osTimer(sawtooth_run_timer), osTimerPeriodic, &state);
 
@@ -50,6 +60,7 @@ void sawtooth_wave_thread(void const *arg)
 			case PARAM_PERIOD_MS:
 			{
 				state.periodMs = cfg->value;
+				apply_periodMaxAmp(&state);
 				break;
 			}
 			default:
@@ -71,7 +82,7 @@ static void sawtooth_run(void const *arg)
 			curTimeMs = 0;
 		}
 
-		GPIO_Write(WAVEFORM_PORT, (uint64_t)state->amplitude * curTimeMs / (state->periodMs - 1));
+		GPIO_Write(WAVEFORM_PORT, (uint64_t)state->amplitude * curTimeMs / state->periodMaxAmpMs);
 	}
 	osMutexRelease(M_sawtooth_state);
 
