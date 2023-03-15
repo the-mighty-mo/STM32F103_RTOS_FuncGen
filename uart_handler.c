@@ -6,6 +6,7 @@
 static osMessageQDef(uart_q, 0x10, uint8_t);
 static osMessageQId Q_uart_id;
 
+static uint8_t ReadChar(void);
 static size_t ReadLine(char *line, size_t line_cap);
 static void SendText(char const *text);
 
@@ -25,9 +26,6 @@ void uart_handler_init(void)
 
 void uart_handler_thread(void const *arg)
 {
-	osEvent result;
-	uint8_t input;
-
 	#define LINE_CAP 16
 	char line[LINE_CAP] = {0};
 	size_t line_len = 0;
@@ -38,6 +36,16 @@ void uart_handler_thread(void const *arg)
 
 		memset(line, 0, sizeof(line));
 	}
+}
+
+/// UART PROCESSING FUNCTIONS
+
+static uint8_t ReadChar(void)
+{
+	osEvent result = osMessageGet(Q_uart_id, osWaitForever);
+	uint8_t input = result.value.v;
+	SendChar(input);
+	return input;
 }
 
 static size_t ReadLine(char *line, size_t line_cap)
@@ -62,7 +70,7 @@ static size_t ReadLine(char *line, size_t line_cap)
 			SendChar('\n');
 			/* return line length */
 			return line_len;
-		} else if (line_len < LINE_CAP - 1) {
+		} else if (line_len < line_cap - 1) {
 			/* add input to the end of the line */
 			line[line_len++] = input;
 			SendChar(input);
