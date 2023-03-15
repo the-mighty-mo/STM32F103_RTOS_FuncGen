@@ -59,6 +59,7 @@ void uart_handler_init(void)
 static program_state_t process_config_pwm(param_t *param)
 {
 	SendText("Waveform: PWM\n");
+	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
@@ -81,6 +82,9 @@ static program_state_t process_config_pwm(param_t *param)
 		case '0':
 			*param = ENABLE_OUT;
 			break;
+		case '\e':
+			*param = NO_PARAM;
+			return SELECT_WAVE;
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -93,6 +97,7 @@ static program_state_t process_config_pwm(param_t *param)
 static program_state_t process_config_saw(param_t *param)
 {
 	SendText("Waveform: Sawtooth\n");
+	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
@@ -111,6 +116,9 @@ static program_state_t process_config_saw(param_t *param)
 		case '0':
 			*param = ENABLE_OUT;
 			break;
+		case '\e':
+			*param = NO_PARAM;
+			return SELECT_WAVE;
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -123,6 +131,7 @@ static program_state_t process_config_saw(param_t *param)
 static program_state_t process_config_sin(param_t *param)
 {
 	SendText("Waveform: Sine\n");
+	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
@@ -141,6 +150,9 @@ static program_state_t process_config_sin(param_t *param)
 		case '0':
 			*param = ENABLE_OUT;
 			break;
+		case '\e':
+			*param = NO_PARAM;
+			return SELECT_WAVE;
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -153,6 +165,7 @@ static program_state_t process_config_sin(param_t *param)
 static program_state_t process_config_tri(param_t *param)
 {
 	SendText("Waveform: Triangle\n");
+	SendText("[Esc] Switch waveform\n");
 	SendText("[0] Enable Output\n");
 	SendText("[1] Change Amplitude\n");
 	SendText("[2] Change Period\n");
@@ -171,6 +184,9 @@ static program_state_t process_config_tri(param_t *param)
 		case '0':
 			*param = ENABLE_OUT;
 			break;
+		case '\e':
+			*param = NO_PARAM;
+			return SELECT_WAVE;
 		default:
 			*param = NO_PARAM;
 			SendText("Invalid input\n");
@@ -266,6 +282,7 @@ void uart_handler_thread(void const *arg)
 						break;
 
 					default:
+						state = SELECT_WAVE;
 						break;
 				}
 
@@ -379,7 +396,7 @@ static uint8_t ReadChar(void)
 	} else if (input == '\r') {
 		input = '\n';
 		SendChar(input);
-	} else {
+	} else if (input != '\e') {
 		SendChar(input);
 	}
 	return input;
@@ -409,7 +426,7 @@ static size_t ReadLine(char *line, size_t line_cap)
 				/* return line length */
 				return line_len;
 			}
-		} else if (line_len < line_cap - 1) {
+		} else if (input != '\e' && line_len < line_cap - 1) {
 			/* add input to the end of the line */
 			line[line_len++] = input;
 			SendChar(input);
