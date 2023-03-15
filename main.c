@@ -45,10 +45,10 @@ int main (void)
 	triangle_wave_init();
 
 	T_uart_thread = osThreadCreate(osThread(uart_handler_thread), NULL);
-	//T_pwm_thread = osThreadCreate(osThread(pwm_wave_thread), NULL);
-	//T_sawtooth_thread = osThreadCreate(osThread(sawtooth_wave_thread), NULL);
+	T_pwm_thread = osThreadCreate(osThread(pwm_wave_thread), NULL);
+	T_sawtooth_thread = osThreadCreate(osThread(sawtooth_wave_thread), NULL);
 	T_sine_thread = osThreadCreate(osThread(sine_wave_thread), NULL);
-	//T_triangle_thread = osThreadCreate(osThread(triangle_wave_thread), NULL);
+	T_triangle_thread = osThreadCreate(osThread(triangle_wave_thread), NULL);
 
 	osKernelStart();                         						// start thread execution
 }

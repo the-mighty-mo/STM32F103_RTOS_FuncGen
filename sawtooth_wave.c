@@ -42,31 +42,50 @@ void sawtooth_wave_thread(void const *arg)
 	apply_periodMaxAmp(&state);
 
 	TMR_sawtooth_run_timer = osTimerCreate(osTimer(sawtooth_run_timer), osTimerPeriodic, &state);
-
-	osTimerStart(TMR_sawtooth_run_timer, 1);
+	uint8_t bRunning = 0;
 
 	osEvent retval;
 	while (1) {
 		retval = osMailGet(Q_sawtooth_cfg_id, osWaitForever);
-		waveform_cfg_t *cfg = retval.value.p;
+		if (retval.status == osEventMail) {
+			waveform_cfg_t *cfg = retval.value.p;
 
-		osMutexWait(M_sawtooth_state, osWaitForever);
-		switch (cfg->type) {
-			case PARAM_AMPLITUDE:
-			{
-				state.amplitude = SCALE_AMPLITUDE(cfg->value);
-				break;
+			osMutexWait(M_sawtooth_state, osWaitForever);
+			switch (cfg->type) {
+				case PARAM_AMPLITUDE:
+				{
+					state.amplitude = SCALE_AMPLITUDE(cfg->value);
+					break;
+				}
+				case PARAM_PERIOD_MS:
+				{
+					state.periodMs = cfg->value;
+					apply_periodMaxAmp(&state);
+					break;
+				}
+				case PARAM_ENABLE:
+				{
+					if (cfg->value) {
+						bRunning = !bRunning;
+					} else {
+						bRunning = 0;
+					}
+
+					if (bRunning) {
+						osTimerStart(TMR_sawtooth_run_timer, 1);
+					} else {
+						osTimerStop(TMR_sawtooth_run_timer);
+						GPIO_Write(WAVEFORM_PORT, 0);
+					}
+					break;
+				}
+				default:
+					break;
 			}
-			case PARAM_PERIOD_MS:
-			{
-				state.periodMs = cfg->value;
-				apply_periodMaxAmp(&state);
-				break;
-			}
-			default:
-				break;
+			osMutexRelease(M_sawtooth_state);
+
+			osMailFree(Q_sawtooth_cfg_id, cfg);
 		}
-		osMutexRelease(M_sawtooth_state);
 	}
 }
 

@@ -6,8 +6,10 @@
 void sawtooth_wave_init(void);
 void sawtooth_wave_thread(void const *arg);
 
-static inline osStatus sawtooth_wave_send_cfg(waveform_cfg_t *cfg)
+static inline osStatus sawtooth_wave_send_cfg(waveform_cfg_t cfg)
 {
 	extern osMailQId Q_sawtooth_cfg_id;
-	return osMailPut(Q_sawtooth_cfg_id, cfg);
+	waveform_cfg_t *alloc_cfg = osMailAlloc(Q_sawtooth_cfg_id, osWaitForever);
+	*alloc_cfg = cfg;
+	return osMailPut(Q_sawtooth_cfg_id, alloc_cfg);
 }

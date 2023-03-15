@@ -6,6 +6,7 @@ typedef enum _waveform_cfg_param_t {
 	PARAM_PERIOD_MS,
 	PARAM_AMPLITUDE,
 	PARAM_DUTYCYCLE,
+	PARAM_ENABLE,
 } waveform_cfg_param_t;
 
 typedef struct _waveform_cfg_t {
