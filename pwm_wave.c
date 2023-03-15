@@ -7,6 +7,7 @@ typedef struct _pwm_state_t {
 	uint16_t amplitude;
 	uint16_t periodMs;
 	uint16_t dutyCycle_q0d10;
+	uint8_t bRunning;
 
 	// calculated values
 	uint16_t onTimeMs;
@@ -42,11 +43,11 @@ void pwm_wave_thread(void const *arg)
 		.amplitude = SCALE_AMPLITUDE(100),
 		.periodMs = 100,
 		.dutyCycle_q0d10 = SCALE_DUTYCYCLE(50),
+		.bRunning = 0,
 	};
 	apply_dc(&state);
 
 	TMR_pwm_run_timer = osTimerCreate(osTimer(pwm_run_timer), osTimerPeriodic, &state);
-	uint8_t bRunning = 0;
 
 	osEvent retval;
 	while (1) {
@@ -77,13 +78,13 @@ void pwm_wave_thread(void const *arg)
 				{
 					if (cfg->value) {
 						/* toggle enable if value is non-zero */
-						bRunning = !bRunning;
+						state.bRunning = !state.bRunning;
 					} else {
 						/* otherwise disable output */
-						bRunning = 0;
+						state.bRunning = 0;
 					}
 
-					if (bRunning) {
+					if (state.bRunning) {
 						osTimerStart(TMR_pwm_run_timer, 1);
 					} else {
 						osTimerStop(TMR_pwm_run_timer);

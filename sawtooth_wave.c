@@ -6,6 +6,7 @@ typedef struct _sawtooth_state_t {
 	// configuration values
 	uint16_t amplitude;
 	uint16_t periodMs;
+	uint8_t bRunning;
 
 	// calculated values
 	uint16_t periodMaxAmpMs;
@@ -40,11 +41,11 @@ void sawtooth_wave_thread(void const *arg)
 	sawtooth_state_t state = {
 		.amplitude = SCALE_AMPLITUDE(100),
 		.periodMs = 100,
+		.bRunning = 0,
 	};
 	apply_periodMaxAmp(&state);
 
 	TMR_sawtooth_run_timer = osTimerCreate(osTimer(sawtooth_run_timer), osTimerPeriodic, &state);
-	uint8_t bRunning = 0;
 
 	osEvent retval;
 	while (1) {
@@ -69,13 +70,13 @@ void sawtooth_wave_thread(void const *arg)
 				{
 					if (cfg->value) {
 						/* toggle enable if value is non-zero */
-						bRunning = !bRunning;
+						state.bRunning = !state.bRunning;
 					} else {
 						/* otherwise disable output */
-						bRunning = 0;
+						state.bRunning = 0;
 					}
 
-					if (bRunning) {
+					if (state.bRunning) {
 						osTimerStart(TMR_sawtooth_run_timer, 1);
 					} else {
 						osTimerStop(TMR_sawtooth_run_timer);
