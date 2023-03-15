@@ -6,6 +6,7 @@
 static osMessageQDef(uart_q, 0x10, uint8_t);
 static osMessageQId Q_uart_id;
 
+static size_t ReadLine(char *line, size_t line_cap);
 static void SendText(char const *text);
 
 void uart_handler_init(void)
@@ -30,6 +31,21 @@ void uart_handler_thread(void const *arg)
 	#define LINE_CAP 16
 	char line[LINE_CAP] = {0};
 	size_t line_len = 0;
+	
+	while (1) {
+		line_len = ReadLine(line, LINE_CAP);
+		// process line
+
+		memset(line, 0, sizeof(line));
+	}
+}
+
+static size_t ReadLine(char *line, size_t line_cap)
+{
+	osEvent result;
+	uint8_t input;
+	
+	size_t line_len = 0;
 
 	while (1) {
 		result = osMessageGet(Q_uart_id, osWaitForever);
@@ -44,12 +60,8 @@ void uart_handler_thread(void const *arg)
 		} else if (input == '\r') {
 			/* UART sends CR, we want to send LF */
 			SendChar('\n');
-
-			/* process line */
-
-			/* clear line */
-			memset(line, 0, sizeof(line));
-			line_len = 0;
+			/* return line length */
+			return line_len;
 		} else if (line_len < LINE_CAP - 1) {
 			/* add input to the end of the line */
 			line[line_len++] = input;
