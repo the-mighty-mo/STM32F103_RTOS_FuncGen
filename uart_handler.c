@@ -544,6 +544,11 @@ static int32_t u16_to_str(uint16_t value, char *str, size_t cap)
 		++str_len;
 	}
 
+	if (str_len >= cap) {
+		str[0] = '\0';
+		return -1;
+	}
+
 	for (int i = str_len - 1; i >= 0; --i) {
 		str[i] = (value % 10) + '0';
 		value /= 10;
