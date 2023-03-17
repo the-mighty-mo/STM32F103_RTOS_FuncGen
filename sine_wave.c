@@ -2,6 +2,7 @@
 #include "sine_wave.h"
 #include "utils.h"
 
+/** Stores the state of the sine waveform. */
 typedef struct _sine_state_t {
 	// configuration values
 	uint16_t amplitude;
@@ -11,17 +12,21 @@ typedef struct _sine_state_t {
 
 static uint16_t curTimeMs = 0;
 
+// mail queue of configuration parameters to apply
 static osMailQDef(sine_cfg_q, 0x8, waveform_cfg_t);
 osMailQId Q_sine_cfg_id;
 
+// message queue to send cfg param values from a recv request
 static osMessageQDef(sine_cfg_recv_q, 0x8, uint32_t);
 osMessageQId Q_sine_cfg_recv_id;
 
+// mutex to protect the shared state of the waveform
 static osMutexDef(sine_state_m);
 osMutexId M_sine_state;
 
+/** Runs the sine waveform assuming the use of a 1ms timer. */
 static void sine_run(void const *arg);
-
+// 1ms timer for the waveform
 static osTimerDef(sine_run_timer, sine_run);
 static osTimerId TMR_sine_run_timer;
 
@@ -32,6 +37,7 @@ void sine_wave_init(void)
 	M_sine_state = osMutexCreate(osMutex(sine_state_m));
 }
 
+/** Sends the requested config parameter to the message queue. */
 static void send_cfg_param(sine_state_t *state, waveform_cfg_param_t param)
 {
 	uint32_t value = 0;
@@ -53,20 +59,24 @@ static void send_cfg_param(sine_state_t *state, waveform_cfg_param_t param)
 
 void sine_wave_thread(void const *arg)
 {
+	// initial state: 100% amplitude, 100ms period, disabled
 	sine_state_t state = {
 		.amplitude = SCALE_AMPLITUDE(100),
 		.periodMs = 100,
 		.bRunning = 0,
 	};
 
+	// create the timer using state as the input param
 	TMR_sine_run_timer = osTimerCreate(osTimer(sine_run_timer), osTimerPeriodic, &state);
 
 	osEvent retval;
 	while (1) {
+		// wait for a new config param
 		retval = osMailGet(Q_sine_cfg_id, osWaitForever);
 		if (retval.status == osEventMail) {
 			waveform_cfg_t *cfg = retval.value.p;
 
+			// lock access to the shared state
 			osMutexWait(M_sine_state, osWaitForever);
 			switch (cfg->type) {
 				case PARAM_AMPLITUDE:
@@ -82,17 +92,20 @@ void sine_wave_thread(void const *arg)
 				case PARAM_ENABLE:
 				{
 					if (cfg->value) {
-						/* toggle enable if value is non-zero */
+						// toggle enable if value is non-zero
 						state.bRunning = !state.bRunning;
 					} else {
-						/* otherwise disable output */
+						// otherwise disable output
 						state.bRunning = 0;
 					}
 
 					if (state.bRunning) {
+						// we are now enabled, start the timer
 						osTimerStart(TMR_sine_run_timer, 1);
 					} else {
+						// we are now disabled, stop the timer
 						osTimerStop(TMR_sine_run_timer);
+						// set output to 0 and reset time
 						GPIO_Write(WAVEFORM_PORT, 0);
 						curTimeMs = 0;
 					}
@@ -114,6 +127,7 @@ void sine_wave_thread(void const *arg)
 }
 
 #define SINE_LOOKUP_SZ 1000
+/** sine lookup table, one full period */
 static uint16_t const sine_lookup[SINE_LOOKUP_SZ] = {
 	0x8000,0x80cd,0x819b,0x8269,0x8337,0x8405,0x84d3,0x85a0,
 	0x866e,0x873b,0x8809,0x88d6,0x89a4,0x8a71,0x8b3e,0x8c0b,
@@ -244,15 +258,19 @@ static uint16_t const sine_lookup[SINE_LOOKUP_SZ] = {
 
 static void sine_run(void const *arg)
 {
+	// lock access to shared state
 	osMutexWait(M_sine_state, osWaitForever);
 	{
 		sine_state_t const *state = arg;
 
+		// if period has elapsed, wrap back around to 0
 		if (curTimeMs >= state->periodMs) {
 			curTimeMs = 0;
 		}
 
+		// calculate the index in the lookup table, which has period 1000
 		uint16_t idx = (uint32_t)curTimeMs * SINE_LOOKUP_SZ / state->periodMs;
+		// output the amplitude from the lookup table, scaled to the input amplitude
 		GPIO_Write(WAVEFORM_PORT, (uint32_t)state->amplitude * sine_lookup[idx] / 0xFFFF);
 	}
 	osMutexRelease(M_sine_state);
