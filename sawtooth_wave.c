@@ -35,6 +35,7 @@ static osTimerId TMR_sawtooth_run_timer;
 
 void sawtooth_wave_init(void)
 {
+	// create the mailbox, message queue, and mutex
 	Q_sawtooth_cfg_id = osMailCreate(osMailQ(sawtooth_cfg_q), NULL);
 	Q_sawtooth_cfg_recv_id = osMessageCreate(osMessageQ(sawtooth_cfg_recv_q), NULL);
 	M_sawtooth_state = osMutexCreate(osMutex(sawtooth_state_m));

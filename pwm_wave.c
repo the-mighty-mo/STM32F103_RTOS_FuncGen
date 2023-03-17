@@ -36,6 +36,7 @@ static osTimerId TMR_pwm_run_timer;
 
 void pwm_wave_init(void)
 {
+	// create the mailbox, message queue, and mutex
 	Q_pwm_cfg_id = osMailCreate(osMailQ(pwm_cfg_q), NULL);
 	Q_pwm_cfg_recv_id = osMessageCreate(osMessageQ(pwm_cfg_recv_q), NULL);
 	M_pwm_state = osMutexCreate(osMutex(pwm_state_m));

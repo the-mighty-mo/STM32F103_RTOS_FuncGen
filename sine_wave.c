@@ -32,6 +32,7 @@ static osTimerId TMR_sine_run_timer;
 
 void sine_wave_init(void)
 {
+	// create the mailbox, message queue, and mutex
 	Q_sine_cfg_id = osMailCreate(osMailQ(sine_cfg_q), NULL);
 	Q_sine_cfg_recv_id = osMessageCreate(osMessageQ(sine_cfg_recv_q), NULL);
 	M_sine_state = osMutexCreate(osMutex(sine_state_m));

@@ -35,6 +35,7 @@ static osTimerId TMR_triangle_run_timer;
 
 void triangle_wave_init(void)
 {
+	// create the mailbox, message queue, and mutex
 	Q_triangle_cfg_id = osMailCreate(osMailQ(triangle_cfg_q), NULL);
 	Q_triangle_cfg_recv_id = osMessageCreate(osMessageQ(triangle_cfg_recv_q), NULL);
 	M_triangle_state = osMutexCreate(osMutex(triangle_state_m));
