@@ -16,14 +16,20 @@ static osMessageQId Q_uart_id;
 
 /** Reads a character from the user. */
 static uint8_t ReadChar(void);
-/** Reads a line of input from the user into the provided buffer. */
+/**
+ * Reads a line of input from the user into the provided buffer.
+ * Returns the length of the string.
+ */
 static size_t ReadLine(char *line, size_t line_cap);
 /** Sends text to the user. */
 static void SendText(char const *text);
 
 /** Parses a u16, saturating at u16 MAX (0xFFFF). */
 static int32_t parse_u16_saturate(char *str);
-/** Converts a u16 to a string, filling the provided buffer. */
+/**
+ * Converts a u16 to a string, filling the provided buffer.
+ * Returns the length of the string, or -1 if there was an error.
+ */
 static int32_t u16_to_str(uint16_t value, char *str, size_t cap);
 
 /// Program state
@@ -76,7 +82,11 @@ void uart_handler_init(void)
 	Q_uart_id = osMessageCreate(osMessageQ(uart_q), NULL);
 }
 
-/** Outputs and processes the PWM configuration menu. */
+/**
+ * Outputs and processes the PWM configuration menu.
+ * The selected config parameter is filled into param.
+ * Returns the next program state.
+ */
 static program_state_t process_config_pwm(param_t *param)
 {
 	SendText("Waveform: PWM\n");
@@ -166,7 +176,11 @@ static program_state_t process_config_pwm(param_t *param)
 	return CONFIG_PARAM;
 }
 
-/** Outputs and processes the sawtooth configuration menu. */
+/**
+ * Outputs and processes the sawtooth configuration menu.
+ * The selected config parameter is filled into param.
+ * Returns the next program state.
+ */
 static program_state_t process_config_saw(param_t *param)
 {
 	SendText("Waveform: Sawtooth\n");
@@ -244,7 +258,11 @@ static program_state_t process_config_saw(param_t *param)
 	return CONFIG_PARAM;
 }
 
-/** Outputs and processes the sine configuration menu. */
+/**
+ * Outputs and processes the sine configuration menu.
+ * The selected config parameter is filled into param.
+ * Returns the next program state.
+ */
 static program_state_t process_config_sin(param_t *param)
 {
 	SendText("Waveform: Sine\n");
@@ -322,7 +340,11 @@ static program_state_t process_config_sin(param_t *param)
 	return CONFIG_PARAM;
 }
 
-/** Outputs and processes the triangle configuration menu. */
+/**
+ * Outputs and processes the triangle configuration menu.
+ * The selected config parameter is filled into param.
+ * Returns the next program state.
+ */
 static program_state_t process_config_tri(param_t *param)
 {
 	SendText("Waveform: Triangle\n");
