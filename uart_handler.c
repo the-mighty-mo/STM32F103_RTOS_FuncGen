@@ -1,5 +1,12 @@
-#include "global.h"
+/*
+ * CE 426 - Real-Time Embedded Systems
+ * Instructor: Dr. Tewolde
+ * Author: Benjamin Hall
+ * Final Project: Function Generator
+ */
+
 #include "uart_handler.h"
+#include "global.h"
 #include "uart.h"
 #include "pwm_wave.h"
 #include "sawtooth_wave.h"

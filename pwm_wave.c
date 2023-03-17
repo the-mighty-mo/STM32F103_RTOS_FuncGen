@@ -1,5 +1,12 @@
-#include "global.h"
+/*
+ * CE 426 - Real-Time Embedded Systems
+ * Instructor: Dr. Tewolde
+ * Author: Benjamin Hall
+ * Final Project: Function Generator
+ */
+
 #include "pwm_wave.h"
+#include "global.h"
 #include "utils.h"
 
 /** Stores the state of the PWM waveform. */
